@@ -48,7 +48,8 @@ class Chip_8 {
 
 		void Emulation_Cycle();
 
-		bool Initialize(const char[] *file_path);
+		//method to start up the emulator
+		bool Initialize(const char *file_path);
 
 };
 
