@@ -46,6 +46,10 @@ class Chip_8 {
 		Chip_8();
 		~Chip_8();
 
+		//Reset and reinitialize the Chip_8 Emulator
+		void Reset();
+
+		//Represents one cycle
 		void Emulation_Cycle();
 
 		//method to start up the emulator
