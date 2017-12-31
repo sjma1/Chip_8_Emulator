@@ -1,3 +1,4 @@
+
 /*
  * Chip_8.cpp
  *
@@ -92,20 +93,62 @@ void Chip_8::Reset() {
 }
 
 bool Chip_8::Initialize(const char *file_path) {
+	//Used for telling FILE functions
+	//how many bytes to move from
+	const int FILE_OFFSET = 0;
+
 	//Reset the Emulator in case it has been used before
 	this->Reset();
+	std::cout << "ATTEMPTING TO OPEN: \n";
 	std::cout << file_path << std::endl;
 
-	FILE* current_ROM = fopen(file_path, "rb");
+	//Get ROM from file path
+	FILE *rom_file = fopen(file_path, "rb");
 
-	if(current_ROM != NULL) {
+	//File path exists and file was successfully read
+	if(rom_file != NULL) {
 
-		//FILLER
-		//FILLER
+		//Move cursor from beginning byte of file to end
+		//Then get filesize by checking where the end of the
+		//file is
+		fseek(rom_file,FILE_OFFSET, SEEK_END);
+		int rom_filesize = ftell(rom_file);
+		fseek(rom_file, FILE_OFFSET, SEEK_SET);
+
+		//Memory Allocation
+		char *rom_mem = new char(sizeof(char) * rom_filesize);
+		if(rom_mem == NULL) {
+			std::cerr << "NOT ENOUGH MEMORY AVAILABLE FOR ROM!\n";
+			delete rom_mem;
+			return false;
+		}
+
+		//Copy the ROM into buffer
+		size_t buffer_size = fread(rom_mem, sizeof(char),
+				(size_t) rom_filesize, rom_file);
+
+		if(buffer_size != (size_t)rom_filesize) {
+			std::cerr << "Error, buffer does not match ROM filesize!\n";
+			delete rom_mem;
+			return false;
+		}
+
+		//Copy the buffer to the memory
+		if(buffer_size >= 4096) {
+			std::cerr << "Error, this ROM exceeds filesize capabilities!\n";
+			delete rom_mem;
+			return false;
+		}
+		for(int i = 0; i < (int)buffer_size; i++) {
+			this->total_memory[i + 512] = (unsigned char)rom_mem[i];
+		}
+		fclose(rom_file);
+		free(rom_mem);
 		return true;
 	}
+
+	//Invalid file path given as argument
 	std::cerr << "ERROR, INVALID FILE PATH!";
 	return false;
 
 }
-
