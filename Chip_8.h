@@ -50,7 +50,7 @@ class Chip_8 {
 		Chip_8();
 		~Chip_8();
 
-		void Emulation_Cycle();
+		void Next_Emulation_Cycle();
 
 		void Reset();
 

@@ -158,6 +158,83 @@ void Chip_8::Set_Operation_Code() {
 }
 
 
-void Chip_8::Emulation_Cycle() {
+void Chip_8::Next_Emulation_Cycle() {
 	this->Set_Operation_Code();
+	switch(this->operation_code & 0x00FF) {
+
+	// case 00E...
+	case 0x000:
+		switch(this->operation_code & 0x00FF) {
+
+		case 0x0000:
+			for(int i = 0; i < 64 * 32; i++) {
+				this->graphics[i] = 0;
+			}
+			this->program_counter += 2;
+			break;
+
+		case 0x000E:
+			this->stack_pointer -= 1;
+			this->program_counter = this->stack[this->stack_pointer];
+			this->program_counter += 2;
+			break;
+
+		default:
+			std::cout << "ERROR, UNKNOWN OPERATION CODE!\n";
+			return;
+		}
+		break;
+
+		case 0x1000:
+			this->program_counter = this->operation_code
+					& 0x00FF;
+			break;
+
+		case 0x2000:
+			this->stack[this->stack_pointer] = this->program_counter;
+			this->stack_pointer++;
+			this->program_counter = this->operation_code
+					& 0x0FFF;
+			break;
+
+		case 0x3000:
+			//Checks if register V is equal
+			//Will update the program counter
+			//to skip an instruction if so
+			if(this->CPU_register_V[(this->operation_code & 0x0F00) >> 8]
+									== (this->operation_code & 0x00FF)) {
+				this->program_counter += 4;
+			}
+			else {
+				this->program_counter += 2;
+			}
+			break;
+
+		case 0x4000:
+			if(this->CPU_register_V[(this->operation_code & 0x0F00) >> 8]
+									!= (this->operation_code & 0x00FF)) {
+				this->program_counter += 4;
+			}
+			else {
+				this->program_counter += 2;
+			}
+			break;
+
+		case 0x5000:
+			if(this->CPU_register_V[(this->operation_code & 0x0F00) >> 8]
+									== this->CPU_register_V[(this->operation_code & 0x00F0) >> 4]) {
+				this->program_counter += 4;
+			}
+			else {
+				this->program_counter += 2;
+			}
+			break;
+
+		case 0x6000:
+			this->CPU_register_V[(this->operation_code & 0x0F00) >> 8]
+								 = this->operation_code & 0x00FF;
+			this->program_counter += 2;
+			break;
+	}
+
 }
