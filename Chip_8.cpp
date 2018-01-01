@@ -150,5 +150,14 @@ bool Chip_8::Initialize(const char *file_path) {
 	//Invalid file path given as argument
 	std::cerr << "ERROR, INVALID FILE PATH!";
 	return false;
+}
 
+void Chip_8::Set_Operation_Code() {
+	this->operation_code = this->total_memory[this->program_counter] << 8
+			| this->total_memory[this->program_counter + 1];
+}
+
+
+void Chip_8::Emulation_Cycle() {
+	this->Set_Operation_Code();
 }

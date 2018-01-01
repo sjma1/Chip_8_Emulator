@@ -34,6 +34,10 @@ class Chip_8 {
 		unsigned short stack_pointer;
 
 
+		//Uses the program counter to set the operation code
+		void Set_Operation_Code();
+
+
 
 	public:
 		//graphics are black/white with a total of 2048 pixels, 64 x 32
@@ -46,11 +50,9 @@ class Chip_8 {
 		Chip_8();
 		~Chip_8();
 
-		//Reset and reinitialize the Chip_8 Emulator
-		void Reset();
-
-		//Represents one cycle
 		void Emulation_Cycle();
+
+		void Reset();
 
 		//method to start up the emulator
 		bool Initialize(const char *file_path);
