@@ -9,7 +9,7 @@
 #define CHIP_8_H_
 
 class Chip_8 {
-	private:
+	public:
 		//Chip_8 has 35 potential opcodes, all are 2 bytes long
 		unsigned short operation_code;
 
@@ -36,6 +36,35 @@ class Chip_8 {
 
 		//Uses the program counter to set the operation code
 		void Set_Operation_Code();
+
+		//Following methods are all helper methods for Next_Emulation_Cycle()
+		void Handle_Case_0x000();
+		void Handle_Case_0x1000();
+		void Handle_Case_0x2000();
+		void Handle_Case_0x3000();
+		void Handle_Case_0x4000();
+		void Handle_Case_0x5000();
+		void Handle_Case_0x6000();
+		void Handle_Case_0x7000();
+		void Handle_Case_0x8000();
+		//The following are helper methods for Handle_Case_0x8000()
+		void Handle_Case_0x0000();
+		void Handle_Case_0x0001();
+		void Handle_Case_0x0002();
+		void Handle_Case_0x0003();
+		void Handle_Case_0x0004();
+		void Handle_Case_0x0005();
+		void Handle_Case_0x0006();
+		void Handle_Case_0x0007();
+		void Handle_Case_0x000E();
+
+		void Handle_Case_0x9000();
+		void Handle_Case_0xA000();
+		void Handle_Case_0xB000();
+		void Handle_Case_0xC000();
+		void Handle_Case_0xD000();
+		void Handle_Case_0xE000();
+		void Handle_Case_0xF000();
 
 
 
