@@ -376,6 +376,168 @@ void Chip_8::Handle_Case_0xC000() {
 	this->CPU_register_V[(this->operation_code & 0x0F00) >> 8] = (rand() % 255) & (this->operation_code & 0x00FF);
 }
 
+void Chip_8::Handle_Case_0xD000() {
+    uint16_t x = this->CPU_register_V[(this->operation_code & 0x0F00) >> 8];
+    uint16_t y = this->CPU_register_V[(this->operation_code & 0x00F0) >> 4];
+    uint16_t height = (this->operation_code & 0x000F);
+    uint16_t pixel;
+
+    this->CPU_register_V[0xF] = 0;
+    for(int y_area = 0; y_area < height; y_area++) {
+    	pixel = this->total_memory[this->index_register_I + y_area];
+    	for(int x_area = 0; x_area < 8; x_area++) {
+    		if((pixel & (0x80 >> x_area)) != 0) {
+    			if(this->graphics[(x + x_area + ((y + y_area) * 64))] == 1) {
+    				this->CPU_register_V[0xF] = 1;
+    			}
+    			this->graphics[x + x_area + ((y + y_area) * 64)] ^= 1;
+    		}
+    	}
+    }
+    this->program_counter += 2;
+}
+
+void Chip_8::Handle_Case_0xE000() {
+	switch(this->operation_code & 0x00FF) {
+	case 0x009E:
+		this->Handle_Case_0x009E();
+		break;
+
+	case 0x00A1:
+		this->Handle_Case_0x00A1();
+		break;
+
+	default:
+		std::cerr << "ERROR, OPERATION CODE DID NOT MATCH ANY KNOWN\n";
+		break;
+	}
+}
+
+void Chip_8::Handle_Case_0x009E() {
+	this-program_counter += 2;
+	if(this->key_state[this->CPU_register_V[(this->operation_code & 0x0F00) >> 8]] != 0) {
+		this->program_counter += 2;
+	}
+}
+
+void Chip_8::Handle_Case_0x00A1() {
+	this->program_counter += 2;
+	if(this->key_state[this->CPU_register_V[(this->operation_code & 0x0F00) >> 8]] == 0) {
+		this->program_counter += 2;
+	}
+}
+
+void Chip_8::Handle_Case_0xF000() {
+	switch(this->operation_code & 0x00FF) {
+	case 0x0007:
+		this->program_counter += 2;
+		this->CPU_register_V[(this->operation_code * 0x0F00) >> 8] = this->delay_timer;
+		break;
+
+	case 0x000A:
+		this->Handle_Case_0x000A();
+		break;
+
+	case 0x0015:
+		this->Handle_Case_0x0015();
+		break;
+
+	case 0x0018:
+		this->Handle_Case_0x0018();
+		break;
+
+	case 0x001E:
+		this->Handle_Case_0x001E();
+		break;
+
+	case 0x0029:
+		this->Handle_Case_0x0029();
+		break;
+
+	case 0x0033:
+		this->Handle_Case_0x0033();
+		break;
+
+	case 0x0055:
+		this->Handle_Case_0x0055();
+		break;
+
+	case 0x0065:
+		this->Handle_Case_0x0065();
+		break;
+
+	default:
+		std::cerr << "ERRROR, OPERATION CODE DOES NOT MATCH\n";
+		break;
+	}
+}
+
+void Chip_8::Handle_Case_0x000A() {
+	bool key = false;
+	for(int i = 0; i < 16; i++) {
+		if(this->key_state[i] != 0) {
+			this->CPU_register_V[(this->operation_code & 0x0F00) >> 8] = i;
+			key = true;
+		}
+	}
+	if(!key) {
+		return;
+	}
+	this->program_counter += 2;
+}
+
+void Chip_8::Handle_Case_0x0015() {
+	this->program_counter += 2;
+	this->delay_timer = this->CPU_register_V[(this->operation_code & 0x0F00) >> 8];
+}
+
+void Chip_8::Handle_Case_0x0018() {
+	this->program_counter += 2;
+	this->sound_timer = this->CPU_register_V[(this->operation_code & 0x0F00) >> 8];
+}
+
+void Chip_8::Handle_Case_0x001E() {
+	this->program_counter += 2;
+	if(this->index_register_I +
+			this->CPU_register_V[(this->operation_code & 0x0F00) >> 8] > 0xFFF) {
+		this->CPU_register_V[0xF] = 1;
+	}
+	else {
+		this->CPU_register_V[0xF] = 0;
+	}
+	this->index_register_I +=
+				this->CPU_register_V[(this->operation_code & 0x0F00) >> 8];
+}
+
+void Chip_8::Handle_Case_0x0029() {
+	this->program_counter += 2;
+	this->index_register_I = this->CPU_register_V[(this->operation_code & 0x0F00) >> 8] * 0x5;
+}
+
+void Chip_8::Handle_Case_0x0033() {
+	this-program_counter += 2;
+	this-total_memory[this-index_register_I] = this->CPU_register_V[(this->operation_code & 0x0F00) >> 8] / 100;
+	this-total_memory[this-index_register_I + 1] = (this->CPU_register_V[(this->operation_code & 0x0F00) >> 8] / 10) % 10;
+	this-total_memory[this-index_register_I + 2] = (this->CPU_register_V[(this->operation_code & 0x0F00) >> 8] % 100) % 10;
+}
+
+void Chip_8::Handle_Case_0x0055() {
+	this->program_counter += 2;
+	this->index_register_I = ((this->operation_code & 0x0F00) >> 8) + 1;
+	for(int i = 0; i <= ((this->operation_code & 0x0F00) >> 8); i++) {
+		this-total_memory[this->index_register_I + i] = this->CPU_register_V[i];
+	}
+}
+
+void Chip_8::Handle_Case_0x0065() {
+	this->program_counter += 2;
+	this->index_register_I = ((this->operation_code & 0x0F00) >> 8) + 1;
+	this->index_register_I = ((this->operation_code & 0x0F00) >> 8) + 1;
+	for(int i = 0; i <= ((this->operation_code & 0x0F00) >> 8); i++) {
+		this->CPU_register_V[i] = this-total_memory[this->index_register_I + i];
+	}
+}
+
 void Chip_8::Next_Emulation_Cycle() {
 	this->Set_Operation_Code();
 	switch(this->operation_code & 0x00FF) {
@@ -418,6 +580,35 @@ void Chip_8::Next_Emulation_Cycle() {
 		case 0x9000:
 			this->Handle_Case_0x9000();
 			break;
+
+		case 0xA000:
+			this->Handle_Case_0xA000();
+			break;
+
+		case 0xB000:
+			this->Handle_Case_0xB000();
+			break;
+
+		case 0xD000:
+			this->Handle_Case_0xB000();
+			break;
+
+		case 0xE000:
+			this->Handle_Case_0xB000();
+			break;
+
+		case 0xF000:
+			this->Handle_Case_0xB000();
+			break;
+		default:
+			std::cerr << "ERROR, OPERATION CODE DID NOT MATCH\n";
+			break;
+	}
+	if(this->delay_timer > 0) {
+		this->delay_timer -= 1;
+	}
+	if(this->sound_timer > 0) {
+		this->sound_timer -= 1;
 	}
 
 }

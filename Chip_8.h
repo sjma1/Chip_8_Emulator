@@ -64,8 +64,20 @@ class Chip_8 {
 		void Handle_Case_0xC000();
 		void Handle_Case_0xD000();
 		void Handle_Case_0xE000();
-		void Handle_Case_0xF000();
+		//The following are helper methods for Handle_Case_0xE000()
+		void Handle_Case_0x009E();
+		void Handle_Case_0x00A1();
 
+		void Handle_Case_0xF000();
+		//The following are helper methods for Handle_Case_0xF000()
+		void Handle_Case_0x000A();
+		void Handle_Case_0x0015();
+		void Handle_Case_0x0018();
+		void Handle_Case_0x001E();
+		void Handle_Case_0x0029();
+		void Handle_Case_0x0033();
+		void Handle_Case_0x0055();
+		void Handle_Case_0x0065();
 
 
 	public:
