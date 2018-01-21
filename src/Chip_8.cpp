@@ -4,10 +4,7 @@
  *  Created on: Dec 28, 2017
  *      Author: Jun
  */
-#include "Chip_8.h"
-#include <iostream>
-#include <stdio.h> // Used for file path of rom
-#include <random>
+#include "Project_Header.h"
 
 //Fontset used by Chip-8
 unsigned char chip8_fontset[80] =
@@ -543,6 +540,7 @@ void Chip_8::Handle_Case_0x0065() {
 
 void Chip_8::Next_Emulation_Cycle() {
 	this->Set_Operation_Code();
+	std::cout << operation_code << std::endl;
 	switch(this->operation_code & 0x00FF) {
 		// case 00E...
 		case 0x000:

@@ -6,10 +6,7 @@
  */
 
 
-#include <iostream>
-#include <iomanip>
-#include "Chip_8.h"
-#include <SDL.h>
+#include "Project_Header.h"
 
 // Keypad keymap
 uint8_t keymap[16] = {
@@ -33,6 +30,17 @@ uint8_t keymap[16] = {
 
 
 int main(int arg, char **argv) {
+	const int ROMS_SIZE = 4;
+	const std::string ROMS[ROMS_SIZE] = {"INVADERS", "TANK", "TETRIS", "PONG"};
+	std::string chosen_ROM;
+	do {
+		std::cout << "AVAILABLE ATARI GAMES TO PLAY: \n";
+		Display_ROM_Titles(ROMS, ROMS_SIZE);
+		std::cout << "Enter a valid game: ";
+		getline(std::cin, chosen_ROM);
+		Convert_String_Toupper(chosen_ROM);
+	}while(!Valid_ROM(ROMS, ROMS_SIZE, chosen_ROM));
+
 	//Initialize the emulator
 	Chip_8 test = Chip_8();
 
@@ -43,7 +51,7 @@ int main(int arg, char **argv) {
 
 	SDL_Window* game_window = NULL;
 	SDL_Init(SDL_INIT_EVERYTHING);
-	game_window = SDL_CreateWindow("CHIP-8",SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+	game_window = SDL_CreateWindow("CHIP-8 Interpreter/Emulator",SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 			WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
 
 
@@ -59,10 +67,51 @@ int main(int arg, char **argv) {
 
 	//pixel buffer
 	unsigned short temp_pixel_buffer[2048];
-	std::string rom_path;
+	std::string user_ROM;
 
 	//Load rom_path and initialize the emulator
 	//Continue emulation cycle
+	test.Initialize(Get_ROM_Directory(chosen_ROM).c_str());
+
+	while(true) {
+		test.Next_Emulation_Cycle();
+		SDL_Event event;
+
+		//while an SDL event is being detected
+		while(SDL_PollEvent(&event)) {
+			if(event.type == SDL_QUIT) {
+				std::cerr << "No event detected!";
+				exit(0);
+			}
+			else if(event.type == SDL_KEYDOWN) {
+				switch(event.key.keysym.sym) {
+				case SDLK_ESCAPE:
+					exit(0);
+					break;
+
+				//Reload ROM
+				case SDLK_F1:
+					std::cout << "RELOADING\n";
+					test.Initialize(Get_ROM_Directory(chosen_ROM).c_str());
+					break;
+				default:
+					break;
+				for(int i = 0; i < 16; i++) {
+					 if(event.key.keysym.sym == keymap[i]) {
+						 test.key_state[i] = 1;
+					 }
+				}
+				}
+			}
+			else if(event.type == SDL_KEYUP) {
+				for(int i = 0; i < 16; i++) {
+					 if(event.key.keysym.sym == keymap[i]) {
+						 test.key_state[i] = 0;
+					 }
+				}
+			}
+		}
+	}
 
 	return 0;
 }
